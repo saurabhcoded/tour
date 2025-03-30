@@ -5,7 +5,7 @@ import ctx from "classnames";
 import { GeistMono } from "geist/font/mono";
 import Editor, { Monaco } from "@monaco-editor/react";
 import { Flex, useColorMode } from "@chakra-ui/react";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import MyBtn from "../MyBtn";
 import { tryFormattingCode, validateCode } from "@/lib/client-functions";
 import FiChevronRight from "@/app/styles/icons/HiChevronRightGreen";
@@ -14,6 +14,8 @@ import { useUserSolutionStore, useEditorStore } from "@/lib/stores";
 import { sendGAEvent } from "@next/third-parties/google";
 import { CodeFile, OutputResult } from "@/lib/types";
 import { OutputReducerAction } from "@/lib/reducers";
+import { GraphicalEditor } from "./GraphicalEditor";
+import { ReactFlowProvider } from "@xyflow/react";
 
 // Custom hook for editor theme setup
 const useEditorTheme = (monaco: Monaco, colorMode: "dark" | "light") => {
@@ -215,32 +217,69 @@ export default function CodeEditor({
     editorStore.setMonaco(monaco);
   };
 
+  const [activeEditor, setActiveEditor] = useState<string>("textual");
+  const editorOptions: [string, JSX.Element][] = [
+    [
+      "textual",
+      <Editor
+        language="json"
+        defaultValue={codeString}
+        theme={colorMode === "light" ? "light" : "my-theme"}
+        value={codeString}
+        height="100%"
+        onChange={(codeString) => setCodeString(codeString ?? "")}
+        options={{
+          minimap: { enabled: false },
+          fontSize: 14,
+          formatOnPaste: true,
+          formatOnType: true,
+        }}
+        onMount={handleEditorMount}
+      />,
+    ],
+    [
+      "graphical",
+      <GraphicalEditor codeString={codeString} setCodeString={setCodeString} />,
+    ],
+  ];
+
+  let isTextual = activeEditor === "textual",
+    isGraphical = activeEditor === "graphical";
+
   return (
     <>
-      <div className={ctx(styles.codeEditor, GeistMono.className)}>
-        <Editor
-          language="json"
-          defaultValue={codeString}
-          theme={colorMode === "light" ? "light" : "my-theme"}
-          value={codeString}
-          height="100%"
-          onChange={(codeString) => setCodeString(codeString ?? "")}
-          options={{
-            minimap: { enabled: false },
-            fontSize: 14,
-            formatOnPaste: true,
-            formatOnType: true,
-          }}
-          onMount={handleEditorMount}
+      <ReactFlowProvider>
+        <div style={{ padding: "5px" }}>
+          <Flex dir="row" gap="8px" alignItems="end">
+            <MyBtn
+              onClick={() => setActiveEditor("textual")}
+              variant={isTextual ? "default" : "success"}
+            >
+              Textual
+            </MyBtn>
+            <MyBtn
+              onClick={() => setActiveEditor("graphical")}
+              variant={isGraphical ? "default" : "success"}
+            >
+              Graphical
+            </MyBtn>
+          </Flex>
+        </div>
+        <div className={ctx(styles.codeEditor, GeistMono.className)}>
+          {editorOptions.map(([editorType, editor]) =>
+            editorType === activeEditor ? (
+              <React.Fragment key={editorType}>{editor}</React.Fragment>
+            ) : null,
+          )}
+        </div>
+        <EditorControls
+          handleValidate={handleValidate}
+          isValidating={isValidating}
+          resetCode={resetCode}
+          nextStepPath={nextStepPath}
+          outputResult={outputResult}
         />
-      </div>
-      <EditorControls
-        handleValidate={handleValidate}
-        isValidating={isValidating}
-        resetCode={resetCode}
-        nextStepPath={nextStepPath}
-        outputResult={outputResult}
-      />
+      </ReactFlowProvider>
     </>
   );
 }
