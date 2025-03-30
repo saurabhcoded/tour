@@ -60,6 +60,9 @@ The project is built using **Next.js**, a React framework for building server-re
 > [!CAUTION]
 > Always run tests before submitting a pull request to ensure your changes do not introduce regressions.
 
+### Demo
+![Demo Url for Visualiser](public/tourschema-demo.gif)
+
 ### Figma Design
 
 You can view the Figma design for the project at [this link](https://www.figma.com/design/w8ow79jE7lJucJt2zZTbcz/Tour-of-JSON-Schema?node-id=2303-39&t=CH9j0oDmVft8uTWX-0).
