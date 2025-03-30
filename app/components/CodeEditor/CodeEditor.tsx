@@ -76,7 +76,7 @@ const useCodePersistence = (
     if (savedCode && savedCode !== codeString) {
       setCodeString(savedCode);
     }
-  }, [chapterIndex, stepIndex]);
+  }, [chapterIndex, stepIndex, setCodeString]);
 
   // Save code changes
   useEffect(() => {
@@ -222,6 +222,7 @@ export default function CodeEditor({
     [
       "textual",
       <Editor
+        key={"textual-editor"}
         language="json"
         defaultValue={codeString}
         theme={colorMode === "light" ? "light" : "my-theme"}
@@ -239,7 +240,11 @@ export default function CodeEditor({
     ],
     [
       "graphical",
-      <GraphicalEditor codeString={codeString} setCodeString={setCodeString} />,
+      <GraphicalEditor
+        key={"graphical-editor"}
+        codeString={codeString}
+        setCodeString={setCodeString}
+      />,
     ],
   ];
 
